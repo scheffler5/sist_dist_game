@@ -1,0 +1,171 @@
+syntax = "proto3";
+
+package game;
+
+service GameService {
+  // Lobby
+  rpc JoinGame(JoinRequest) returns (JoinResponse);
+  rpc GetGameState(PlayerRequest) returns (GameStateResponse);
+  rpc StartGame(StartGameRequest) returns (ActionResponse);
+  rpc KickPlayer(KickRequest) returns (ActionResponse);
+
+  // Gameplay - dicas e palpites
+  rpc SendPublicHint(HintRequest) returns (ActionResponse);
+  rpc GuessObject(GuessRequest) returns (ActionResponse);
+  rpc ValidateGuess(ValidateRequest) returns (ActionResponse);
+  rpc AdvanceTurn(PlayerRequest) returns (ActionResponse);
+
+  // Troca privada de dicas
+  rpc RequestPrivateExchange(ExchangeRequest) returns (ActionResponse);
+  rpc RespondToExchange(ExchangeResponseRequest) returns (ActionResponse);
+
+  // Espionagem
+  rpc SpyOnExchange(SpyRequest) returns (ActionResponse);
+
+  // Votação para continuar
+  rpc VoteContinue(VoteRequest) returns (ActionResponse);
+
+  // Chat (persistido no MongoDB)
+  rpc SendChatMessage(ChatMessageRequest) returns (ActionResponse);
+  rpc GetChatHistory(ChatHistoryRequest) returns (ChatHistoryResponse);
+
+  // Stream de eventos em tempo real (server-side streaming)
+  rpc StreamEvents(StreamRequest) returns (stream GameEvent);
+}
+
+// --------------- Mensagens de Lobby ---------------
+
+message JoinRequest {
+  string player_name = 1;
+  string game_id = 2;
+}
+
+message JoinResponse {
+  bool success = 1;
+  string player_id = 2;
+  string game_id = 3;
+  string message = 4;
+}
+
+message PlayerRequest {
+  string player_id = 1;
+  string game_id = 2;
+}
+
+message StartGameRequest {
+  string player_id = 1;
+  string game_id = 2;
+  int32 max_turns = 3;
+}
+
+message KickRequest {
+  string host_id = 1;
+  string game_id = 2;
+  string target_id = 3;
+}
+
+message GameStateResponse {
+  bool success = 1;
+  string state_json = 2;
+  string message = 3;
+}
+
+message ActionResponse {
+  bool success = 1;
+  string message = 2;
+  string data = 3;
+}
+
+// --------------- Gameplay ---------------
+
+message HintRequest {
+  string player_id = 1;
+  string game_id = 2;
+  string hint = 3;
+}
+
+message GuessRequest {
+  string guesser_id = 1;
+  string game_id = 2;
+  string target_player_id = 3;
+  string guess = 4;
+}
+
+message ValidateRequest {
+  string validator_id = 1;
+  string game_id = 2;
+  string guess_id = 3;
+  bool is_correct = 4;
+}
+
+// --------------- Troca Privada ---------------
+
+message ExchangeRequest {
+  string from_id = 1;
+  string to_id = 2;
+  string game_id = 3;
+  string hint = 4;
+}
+
+message ExchangeResponseRequest {
+  string responder_id = 1;
+  string game_id = 2;
+  string exchange_id = 3;
+  bool accept = 4;
+  string hint = 5;
+}
+
+// --------------- Espionagem ---------------
+
+message SpyRequest {
+  string spy_id = 1;
+  string game_id = 2;
+  string exchange_id = 3;
+}
+
+// --------------- Votação ---------------
+
+message VoteRequest {
+  string player_id = 1;
+  string game_id = 2;
+  bool continue_game = 3;
+}
+
+// --------------- Chat ---------------
+
+message ChatMessageRequest {
+  string player_id = 1;
+  string player_name = 2;
+  string game_id = 3;
+  string message = 4;
+}
+
+message ChatHistoryRequest {
+  string game_id = 1;
+  int32 limit = 2;
+}
+
+message ChatHistoryResponse {
+  repeated ChatMessage messages = 1;
+}
+
+message ChatMessage {
+  string player_id = 1;
+  string player_name = 2;
+  string message = 3;
+  int64 timestamp = 4;
+}
+
+// --------------- Stream de Eventos ---------------
+
+message StreamRequest {
+  string player_id = 1;
+  string game_id = 2;
+}
+
+message GameEvent {
+  string event_type = 1;
+  string data = 2;
+  int64 timestamp = 3;
+  string target_player_id = 4;
+}

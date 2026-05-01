@@ -1,0 +1,61 @@
+services:
+
+  # ── MongoDB ────────────────────────────────────────────────
+  mongodb:
+    image: mongo:7
+    container_name: guessgame-mongodb
+    restart: unless-stopped
+    volumes:
+      - mongo_data:/data/db
+    environment:
+      MONGO_INITDB_DATABASE: guessgame
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - game-network
+
+  # ── Backend (gRPC Server + FastAPI Gateway) ────────────────
+  backend:
+    build:
+      context: ./back-end
+      dockerfile: Dockerfile
+    container_name: guessgame-backend
+    restart: unless-stopped
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    environment:
+      GRPC_HOST: localhost
+      GRPC_PORT: "50051"
+      HTTP_PORT: "8000"
+      MONGO_URI: mongodb://mongodb:27017
+      MONGO_DB: guessgame
+    ports:
+      - "8000:8000"
+      - "50051:50051"
+    networks:
+      - game-network
+
+  # ── Frontend (Nginx + HTML/CSS/JS) ─────────────────────────
+  frontend:
+    build:
+      context: ./front-end
+      dockerfile: Dockerfile
+    container_name: guessgame-frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "80:80"
+    networks:
+      - game-network
+
+volumes:
+  mongo_data:
+
+networks:
+  game-network:
+    driver: bridge
