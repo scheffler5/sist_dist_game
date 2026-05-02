@@ -19,7 +19,9 @@ echo "=== Iniciando servidor gRPC (porta 50051) ==="
 python /app/game_server.py &
 
 echo "=== Aguardando gRPC iniciar ==="
-sleep 2
+until python -c "import grpc; grpc.channel_ready_future(grpc.insecure_channel('localhost:${GRPC_PORT:-50051}')).result(timeout=1)" 2>/dev/null; do
+  sleep 1
+done
 
 echo "=== Iniciando gateway HTTP/WebSocket (porta 8000) ==="
 exec python -m uvicorn gateway:app \
