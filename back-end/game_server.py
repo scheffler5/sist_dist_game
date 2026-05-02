@@ -15,7 +15,7 @@ import grpc
 # Importa os módulos gerados pelo protoc
 sys.path.insert(0, os.path.dirname(__file__))
 from generated import game_pb2, game_pb2_grpc
-from game_logic import game_manager
+from game_manager import game_manager
 from database import db
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [SERVER] %(message)s")
@@ -65,24 +65,12 @@ class GameServiceServicer(game_pb2_grpc.GameServiceServicer):
         return game_pb2.ActionResponse(success=ok, message=msg)
 
     async def KickPlayer(self, request, context):
-        game = game_manager.get_game(request.game_id)
-        if not game:
-            return game_pb2.ActionResponse(success=False, message="Jogo não encontrado")
-
-        host = game.players.get(request.host_id)
-        if not host or not host.is_host:
-            return game_pb2.ActionResponse(success=False, message="Apenas o host pode remover jogadores")
-
-        target = game.players.get(request.target_id)
-        if not target:
-            return game_pb2.ActionResponse(success=False, message="Jogador não encontrado")
-
-        del game.players[request.target_id]
-        await game_manager._broadcast(request.game_id, "player_kicked", {
-            "player_id": request.target_id,
-            "player_name": target.name,
-        })
-        return game_pb2.ActionResponse(success=True, message=f"{target.name} removido do jogo")
+        ok, msg = await game_manager.kick_player(
+            game_id=request.game_id,
+            host_id=request.host_id,
+            target_id=request.target_id,
+        )
+        return game_pb2.ActionResponse(success=ok, message=msg)
 
     # ==================== Gameplay ====================
 

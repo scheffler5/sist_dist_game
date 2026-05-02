@@ -254,7 +254,7 @@ function handleEvent(type, data) {
       break;
 
     case "spy_caught":
-      toast(`👮 Você foi pego espiando! ${data.score_delta} pts`, "error", 6000);
+      toast(`👀 ${data.spy_name} tentou espionar sua troca e foi descoberto!`, "warning", 6000);
       refreshState();
       break;
 
@@ -505,13 +505,14 @@ function closeSpy() {
 
 async function confirmSpy() {
   if (!state.spyTarget) return;
+  const target = state.spyTarget;
   closeSpy();
 
   try {
     const res = await api("/api/spy", "POST", {
       spy_id: state.playerId,
       game_id: state.gameId,
-      exchange_id: state.spyTarget.exchange_id,
+      exchange_id: target.exchange_id,
     });
 
     if (res.success) {
@@ -519,11 +520,11 @@ async function confirmSpy() {
         toast(`🚨 Você foi PEGO espiando! Perdeu ${Math.abs(res.score_delta || 5)} pontos.`, "error", 8000);
       } else {
         toast(
-          `🕵️ Espionagem bem-sucedida!\n${state.spyTarget.from_name}: "${res.hint1}"\n${state.spyTarget.to_name}: "${res.hint2}"`,
+          `🕵️ Espionagem bem-sucedida!\n${target.from_name}: "${res.hint1}"\n${target.to_name}: "${res.hint2}"`,
           "spy", 10000
         );
         // Mostra as dicas em um popup visual
-        showSpyResult(res.hint1, res.hint2, state.spyTarget.from_name, state.spyTarget.to_name);
+        showSpyResult(res.hint1, res.hint2, target.from_name, target.to_name);
       }
     } else {
       toast(res.message, "error");
