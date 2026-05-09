@@ -72,6 +72,12 @@ class Database:
         )
         return [doc async for doc in cursor]
 
+    async def delete_chat(self, game_id: str) -> int:
+        if self._db is None:
+            return 0
+        result = await self._db.chat.delete_many({"game_id": game_id})
+        return result.deleted_count
+
     async def close(self):
         if self._client:
             self._client.close()

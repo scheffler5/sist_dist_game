@@ -47,18 +47,17 @@ function showScreen(id) {
 // ==================== Toast Notifications ====================
 function toast(message, type = "info", duration = 4000) {
   const container = document.getElementById("toasts");
-  const colors = {
-    info:    "bg-gray-800 border-gray-600 text-gray-200",
-    success: "bg-green-900 border-green-600 text-green-100",
-    error:   "bg-red-900 border-red-600 text-red-100",
-    warning: "bg-amber-900 border-amber-600 text-amber-100",
-    spy:     "bg-purple-900 border-purple-600 text-purple-100",
+  const styles = {
+    info:    "bg-zinc-900 border-zinc-700 text-zinc-100",
+    success: "bg-zinc-900 border-emerald-800 text-zinc-100",
+    error:   "bg-zinc-900 border-red-800 text-zinc-100",
+    warning: "bg-zinc-900 border-amber-800 text-zinc-100",
+    spy:     "bg-zinc-900 border-blue-800 text-zinc-100",
   };
-  const icons = { info:"ℹ️", success:"✅", error:"❌", warning:"⚠️", spy:"🕵️" };
 
   const el = document.createElement("div");
-  el.className = `border rounded-xl px-4 py-3 text-sm flex gap-2 items-start toast-enter shadow-xl ${colors[type] || colors.info}`;
-  el.innerHTML = `<span class="flex-shrink-0 mt-0.5">${icons[type]||"ℹ️"}</span><span class="flex-1">${message}</span>`;
+  el.className = `border rounded-md px-3 py-2 text-sm toast-enter shadow-md ${styles[type] || styles.info}`;
+  el.innerHTML = `<span>${message}</span>`;
   container.appendChild(el);
 
   setTimeout(() => {
@@ -69,11 +68,11 @@ function toast(message, type = "info", duration = 4000) {
 }
 
 // ==================== Feed de Eventos (in-game) ====================
-function addEventFeed(text, color = "bg-gray-800") {
+function addEventFeed(text) {
   const feed = document.getElementById("event-feed");
   if (!feed) return;
   const el = document.createElement("div");
-  el.className = `${color} border border-gray-700 rounded-xl px-3 py-2 text-xs text-white shadow-lg toast-enter pointer-events-auto`;
+  el.className = "bg-zinc-900 border border-zinc-800 rounded-md px-3 py-1.5 text-xs text-zinc-300 toast-enter pointer-events-auto";
   el.textContent = text;
   feed.appendChild(el);
   if (feed.children.length > 5) feed.removeChild(feed.firstChild);
@@ -142,7 +141,7 @@ function handleEvent(type, data) {
       break;
 
     case "player_joined":
-      toast(`${data.player_name} entrou na sala!`, "info");
+      toast(`${data.player_name} entrou na sala.`, "info");
       refreshState();
       break;
 
@@ -163,22 +162,22 @@ function handleEvent(type, data) {
       showScreen("game");
       renderMyObject();
       loadChatHistory();
-      toast("🚀 Jogo iniciado! Boa sorte!", "success");
-      addEventFeed(`🎮 Turno 1 iniciado!`, "bg-indigo-900");
+      toast("Jogo iniciado.", "success");
+      addEventFeed("Turno 1 iniciado.");
       break;
 
     case "hint_sent":
-      addEventFeed(`💡 ${data.player_name} enviou uma dica no turno ${data.turn}`);
+      addEventFeed(`${data.player_name} enviou uma dica no turno ${data.turn}.`);
       if (data.player_id === state.playerId) {
         state.hintSentThisTurn = true;
-        document.getElementById("hint-status").textContent = "✓ Dica enviada neste turno";
-        document.getElementById("hint-status").className = "text-xs text-green-400";
+        document.getElementById("hint-status").textContent = "Dica enviada neste turno.";
+        document.getElementById("hint-status").className = "text-xs text-emerald-400";
       }
       refreshState();
       break;
 
     case "guess_pending":
-      addEventFeed(`🎯 ${data.guesser_name} tentou adivinhar o objeto de ${data.target_name}: "${data.guess}"`);
+      addEventFeed(`${data.guesser_name} tentou adivinhar o objeto de ${data.target_name}: "${data.guess}".`);
       break;
 
     case "validate_request":
@@ -188,26 +187,26 @@ function handleEvent(type, data) {
         guesser_name: data.guesser_name,
         guess: data.guess,
       });
-      toast(`🎯 ${data.guesser_name} adivinhou "${data.guess}" para seu objeto! Você valida?`, "warning", 10000);
+      toast(`${data.guesser_name} adivinhou "${data.guess}" para seu objeto. Validar?`, "warning", 10000);
       renderNotifications();
       break;
 
     case "guess_result":
       if (data.correct) {
         const msg = data.first_correct
-          ? `✅ ${data.guesser_name} adivinhou PRIMEIRO o objeto de ${data.target_name}: "${data.object_emoji} ${data.object_name}" (+${data.points} pts)`
-          : `✅ ${data.guesser_name} acertou o objeto de ${data.target_name}: "${data.object_emoji} ${data.object_name}" (+${data.points} pts)`;
+          ? `${data.guesser_name} foi o primeiro a acertar o objeto de ${data.target_name}: ${data.object_name} (+${data.points} pts).`
+          : `${data.guesser_name} acertou o objeto de ${data.target_name}: ${data.object_name} (+${data.points} pts).`;
         toast(msg, "success", 6000);
-        addEventFeed(msg, "bg-green-900");
+        addEventFeed(msg);
       } else {
-        addEventFeed(`❌ ${data.guesser_name} errou o palpite "${data.guess}"`);
+        addEventFeed(`${data.guesser_name} errou o palpite "${data.guess}".`);
       }
       refreshState();
       break;
 
     case "all_guessed":
-      toast(`😬 Todos adivinharam o objeto de ${data.target_name}! "${data.object_name}"`, "warning");
-      addEventFeed(`😬 Todos descobriram o objeto de ${data.target_name}!`, "bg-amber-900");
+      toast(`Todos adivinharam o objeto de ${data.target_name}: ${data.object_name}.`, "warning");
+      addEventFeed(`Todos descobriram o objeto de ${data.target_name}.`);
       refreshState();
       break;
 
@@ -218,48 +217,47 @@ function handleEvent(type, data) {
         from_id: data.from_id,
         from_name: data.from_name,
       });
-      toast(`🤝 ${data.from_name} quer trocar dicas com você!`, "warning", 10000);
+      toast(`${data.from_name} quer trocar dicas com você.`, "warning", 10000);
       renderNotifications();
       break;
 
     case "exchange_announced":
-      addEventFeed(`🤝 ${data.from_name} solicitou troca de dica com ${data.to_name}`, "bg-purple-900");
+      addEventFeed(`${data.from_name} solicitou troca de dica com ${data.to_name}.`);
       break;
 
     case "exchange_accepted":
-      // Para cada participante: recebe as dicas
-      toast(`✅ Troca aceita! Dica recebida: "${data.your_hint_received}"`, "success", 8000);
-      addEventFeed(`✅ Troca entre ${data.from_name} e ${data.to_name} concluída`);
+      toast(`Troca aceita. Dica recebida: "${data.your_hint_received}".`, "success", 8000);
+      addEventFeed(`Troca entre ${data.from_name} e ${data.to_name} concluída.`);
       refreshState();
       break;
 
     case "exchange_completed":
-      addEventFeed(`🔐 ${data.from_name} e ${data.to_name} concluíram troca privada`, "bg-purple-900");
+      addEventFeed(`${data.from_name} e ${data.to_name} concluíram troca privada.`);
       refreshState();
       break;
 
     case "exchange_rejected":
-      toast(`❌ ${data.to_name} recusou a troca de dicas.`, "warning");
-      addEventFeed(`❌ ${data.to_name} recusou troca com ${data.from_name}`);
+      toast(`${data.to_name} recusou a troca de dicas.`, "warning");
+      addEventFeed(`${data.to_name} recusou troca com ${data.from_name}.`);
       refreshState();
       break;
 
     case "spy_attempt":
       if (data.discovered) {
-        toast(`🚨 ${data.spy_name} foi PEGO espiando a troca de ${data.target1_name} e ${data.target2_name}!`, "warning", 6000);
-        addEventFeed(`🚨 ${data.spy_name} foi pego espiando!`, "bg-red-900");
+        toast(`${data.spy_name} foi pego espiando a troca de ${data.target1_name} e ${data.target2_name}.`, "warning", 6000);
+        addEventFeed(`${data.spy_name} foi pego espiando.`);
       } else {
-        addEventFeed(`👀 Alguém tentou espionar...`, "bg-gray-800");
+        addEventFeed("Alguém tentou espionar uma troca.");
       }
       break;
 
     case "spy_caught":
-      toast(`👀 ${data.spy_name} tentou espionar sua troca e foi descoberto!`, "warning", 6000);
+      toast(`${data.spy_name} tentou espionar sua troca e foi descoberto.`, "warning", 6000);
       refreshState();
       break;
 
     case "you_were_caught_spying":
-      toast(`🚨 Você foi DESCOBERTO espiando! ${data.score_delta} pontos`, "error", 8000);
+      toast(`Você foi descoberto espiando. ${data.score_delta} pontos.`, "error", 8000);
       refreshState();
       break;
 
@@ -267,15 +265,15 @@ function handleEvent(type, data) {
       state.hintSentThisTurn = false;
       document.getElementById("hint-status").textContent = "";
       document.getElementById("hud-turn").textContent = `${data.current_turn}/${data.max_turns}`;
-      toast(`⏭ Turno ${data.current_turn} de ${data.max_turns}`, "info");
-      addEventFeed(`⏭ Turno ${data.current_turn} iniciado!`, "bg-indigo-900");
+      toast(`Turno ${data.current_turn} de ${data.max_turns}.`, "info");
+      addEventFeed(`Turno ${data.current_turn} iniciado.`);
       refreshState();
       break;
 
     case "voting_started":
       showScreen("voting");
       renderVotingScores(data.scores);
-      toast("🗳️ Limite de turnos! Vote para continuar ou encerrar.", "warning", 8000);
+      toast("Limite de turnos atingido. Vote para continuar ou encerrar.", "warning", 8000);
       break;
 
     case "vote_update":
@@ -294,8 +292,8 @@ function handleEvent(type, data) {
       if (data.state) applyGameState(data.state);
       showScreen("game");
       renderMyObject();
-      toast(`🔄 Rodada ${data.round} começou! Novo objeto!`, "success", 6000);
-      addEventFeed(`🔄 Rodada ${data.round} iniciada!`, "bg-indigo-900");
+      toast(`Rodada ${data.round} iniciada. Novo objeto.`, "success", 6000);
+      addEventFeed(`Rodada ${data.round} iniciada.`);
       break;
 
     case "game_finished":
@@ -317,7 +315,7 @@ async function joinGame() {
   const name = document.getElementById("input-name").value.trim();
   const gameId = document.getElementById("input-gameid").value.trim();
 
-  if (!name) { toast("Digite seu nome!", "error"); return; }
+  if (!name) { toast("Digite seu nome.", "error"); return; }
 
   try {
     const res = await api("/api/join", "POST", { player_name: name, game_id: gameId });
@@ -358,8 +356,8 @@ async function startGame() {
 // ==================== Ações do Jogo ====================
 async function sendHint() {
   const hint = document.getElementById("hint-input").value.trim();
-  if (!hint) { toast("Digite uma dica!", "error"); return; }
-  if (hint.includes(" ")) { toast("A dica deve ser uma única palavra!", "error"); return; }
+  if (!hint) { toast("Digite uma dica.", "error"); return; }
+  if (hint.includes(" ")) { toast("A dica deve ser uma única palavra.", "error"); return; }
 
   try {
     const res = await api("/api/hint", "POST", {
@@ -381,8 +379,8 @@ async function sendGuess() {
   const targetId = document.getElementById("guess-target").value;
   const guess = document.getElementById("guess-input").value.trim();
 
-  if (!targetId) { toast("Escolha um jogador!", "error"); return; }
-  if (!guess) { toast("Digite seu palpite!", "error"); return; }
+  if (!targetId) { toast("Escolha um jogador.", "error"); return; }
+  if (!guess) { toast("Digite seu palpite.", "error"); return; }
 
   try {
     const res = await api("/api/guess", "POST", {
@@ -393,7 +391,7 @@ async function sendGuess() {
     });
     if (res.success) {
       document.getElementById("guess-input").value = "";
-      toast("Palpite enviado! Aguardando validação...", "info");
+      toast("Palpite enviado. Aguardando validação.", "info");
     } else {
       toast(res.message, "error");
     }
@@ -438,8 +436,8 @@ async function requestExchange() {
   const toId = document.getElementById("exchange-target").value;
   const hint = document.getElementById("exchange-hint").value.trim();
 
-  if (!toId) { toast("Escolha o jogador para troca!", "error"); return; }
-  if (!hint || hint.includes(" ")) { toast("A dica deve ser uma única palavra!", "error"); return; }
+  if (!toId) { toast("Escolha o jogador para a troca.", "error"); return; }
+  if (!hint || hint.includes(" ")) { toast("A dica deve ser uma única palavra.", "error"); return; }
 
   try {
     const res = await api("/api/exchange/request", "POST", {
@@ -450,7 +448,7 @@ async function requestExchange() {
     });
     if (res.success) {
       document.getElementById("exchange-hint").value = "";
-      toast("Solicitação de troca enviada!", "success");
+      toast("Solicitação de troca enviada.", "success");
     } else {
       toast(res.message, "error");
     }
@@ -465,7 +463,7 @@ async function respondToExchange(exchangeId, accept) {
     hint = prompt("Qual dica você quer enviar em troca? (uma palavra)") || "";
     hint = hint.trim().toLowerCase();
     if (!hint || hint.includes(" ")) {
-      toast("A dica deve ser uma única palavra!", "error");
+      toast("A dica deve ser uma única palavra.", "error");
       return;
     }
   }
@@ -517,13 +515,12 @@ async function confirmSpy() {
 
     if (res.success) {
       if (res.discovered) {
-        toast(`🚨 Você foi PEGO espiando! Perdeu ${Math.abs(res.score_delta || 5)} pontos.`, "error", 8000);
+        toast(`Você foi descoberto espiando. Perdeu ${Math.abs(res.score_delta || 5)} pontos.`, "error", 8000);
       } else {
         toast(
-          `🕵️ Espionagem bem-sucedida!\n${target.from_name}: "${res.hint1}"\n${target.to_name}: "${res.hint2}"`,
+          `Espionagem bem-sucedida. ${target.from_name}: "${res.hint1}" · ${target.to_name}: "${res.hint2}".`,
           "spy", 10000
         );
-        // Mostra as dicas em um popup visual
         showSpyResult(res.hint1, res.hint2, target.from_name, target.to_name);
       }
     } else {
@@ -537,11 +534,11 @@ async function confirmSpy() {
 function showSpyResult(hint1, hint2, name1, name2) {
   const container = document.getElementById("event-feed");
   const el = document.createElement("div");
-  el.className = "bg-purple-900 border border-purple-600 rounded-xl px-4 py-3 text-sm text-white shadow-xl toast-enter pointer-events-auto";
+  el.className = "bg-zinc-900 border border-blue-800 rounded-md px-3 py-2 text-sm text-zinc-100 shadow-md toast-enter pointer-events-auto";
   el.innerHTML = `
-    <div class="font-bold mb-1">🕵️ Dicas espionadas:</div>
-    <div>${name1}: <span class="text-purple-300 font-mono">${hint1}</span></div>
-    <div>${name2}: <span class="text-purple-300 font-mono">${hint2}</span></div>
+    <div class="font-medium mb-1 text-zinc-200">Dicas espionadas</div>
+    <div class="text-zinc-300">${escapeHtml(name1)}: <span class="font-mono text-zinc-100">${escapeHtml(hint1)}</span></div>
+    <div class="text-zinc-300">${escapeHtml(name2)}: <span class="font-mono text-zinc-100">${escapeHtml(hint2)}</span></div>
   `;
   container.appendChild(el);
   setTimeout(() => el.remove(), 12000);
@@ -549,7 +546,7 @@ function showSpyResult(hint1, hint2, name1, name2) {
 
 // ==================== Votação ====================
 async function vote(continueGame) {
-  if (state.voted) { toast("Você já votou!", "warning"); return; }
+  if (state.voted) { toast("Você já votou.", "warning"); return; }
   state.voted = true;
 
   try {
@@ -561,7 +558,7 @@ async function vote(continueGame) {
     if (res.success) {
       document.getElementById("vote-buttons").classList.add("hidden");
       document.getElementById("vote-status").classList.remove("hidden");
-      toast(continueGame ? "✅ Você votou para continuar!" : "🏁 Você votou para encerrar!", "success");
+      toast(continueGame ? "Você votou para continuar." : "Você votou para encerrar.", "success");
     } else {
       state.voted = false;
       toast(res.message, "error");
@@ -601,10 +598,10 @@ function appendChatMessage(data) {
   const el = document.createElement("div");
   el.className = isMe ? "text-right" : "text-left";
   el.innerHTML = `
-    <div class="inline-block max-w-[85%] ${isMe ? "bg-indigo-900 text-indigo-100" : "bg-gray-800 text-gray-200"} rounded-xl px-3 py-2 text-sm">
-      ${!isMe ? `<div class="text-xs text-gray-400 mb-0.5 font-medium">${escapeHtml(data.player_name)}</div>` : ""}
+    <div class="inline-block max-w-[85%] ${isMe ? "bg-blue-600/20 border border-blue-800/40 text-zinc-100" : "bg-zinc-800 text-zinc-200"} rounded-md px-2.5 py-1.5 text-sm">
+      ${!isMe ? `<div class="text-xs text-zinc-400 mb-0.5">${escapeHtml(data.player_name)}</div>` : ""}
       <div>${escapeHtml(data.message)}</div>
-      <div class="text-xs opacity-50 mt-0.5">${time}</div>
+      <div class="text-[10px] text-zinc-500 mt-0.5">${time}</div>
     </div>
   `;
   container.appendChild(el);
@@ -656,8 +653,8 @@ function applyGameState(gameState) {
     const hintStatus = document.getElementById("hint-status");
     if (hintStatus) {
       if (me.hint_sent_this_turn) {
-        hintStatus.textContent = "✓ Dica enviada neste turno";
-        hintStatus.className = "text-xs text-green-400";
+        hintStatus.textContent = "Dica enviada neste turno.";
+        hintStatus.className = "text-xs text-emerald-400";
       } else {
         hintStatus.textContent = "";
       }
@@ -680,8 +677,8 @@ function applyGameState(gameState) {
     if (myHintsList) {
       const hints = me.public_hints || [];
       myHintsList.innerHTML = hints.length
-        ? hints.map(h => `<span class="bg-indigo-900/70 text-indigo-200 px-2 py-0.5 rounded-full text-xs font-mono">${escapeHtml(h)}</span>`).join("")
-        : '<span class="text-xs text-gray-500 italic">Nenhuma ainda</span>';
+        ? hints.map(h => `<span class="bg-zinc-800 text-zinc-300 px-2 py-0.5 rounded text-xs font-mono">${escapeHtml(h)}</span>`).join("")
+        : '<span class="text-xs text-zinc-600">—</span>';
     }
   }
 
@@ -733,39 +730,39 @@ function renderPlayers(gameState) {
     if (p.id === state.playerId) return;
 
     const hintBadges = p.public_hints.map(h =>
-      `<span class="bg-gray-700 text-gray-200 px-2 py-0.5 rounded-full text-xs font-mono">${escapeHtml(h)}</span>`
-    ).join("") || '<span class="text-gray-500 text-xs italic">Sem dicas ainda</span>';
+      `<span class="bg-zinc-800 text-zinc-300 px-2 py-0.5 rounded text-xs font-mono">${escapeHtml(h)}</span>`
+    ).join("") || '<span class="text-zinc-600 text-xs">sem dicas</span>';
 
     const guessedBadge = p.object_guessed
-      ? `<span class="bg-green-900 text-green-300 px-2 py-0.5 rounded-full text-xs">✅ Adivinhado: ${p.object_emoji} ${p.object_name}</span>`
+      ? `<div class="mt-2 text-xs text-emerald-400">Adivinhado: ${escapeHtml(p.object_name)}</div>`
       : "";
 
     const card = document.createElement("div");
-    card.className = "bg-gray-800 rounded-xl p-3 border border-gray-700 hover:border-gray-600 transition";
+    card.className = "border border-zinc-800 rounded-md p-3 bg-zinc-950";
     card.innerHTML = `
       <div class="flex items-center justify-between mb-2">
         <div class="flex items-center gap-2">
-          <span class="text-lg">${p.is_host ? "👑" : "🎭"}</span>
-          <span class="font-semibold text-white text-sm">${escapeHtml(p.name)}</span>
-          ${p.hint_sent_this_turn ? '<span class="text-xs bg-indigo-900 text-indigo-300 px-1.5 py-0.5 rounded">dica ✓</span>' : ''}
+          <span class="text-sm font-medium text-zinc-100">${escapeHtml(p.name)}</span>
+          ${p.is_host ? '<span class="text-[10px] uppercase tracking-wider text-zinc-500">host</span>' : ''}
+          ${p.hint_sent_this_turn ? '<span class="text-[10px] uppercase tracking-wider text-emerald-500">dica</span>' : ''}
         </div>
-        <span class="text-green-400 font-bold text-sm">${p.score} pts</span>
+        <span class="text-zinc-300 text-sm tabular-nums">${p.score}</span>
       </div>
-      <div class="flex flex-wrap gap-1 mb-2">${hintBadges}</div>
-      ${guessedBadge ? `<div class="mt-1">${guessedBadge}</div>` : ""}
+      <div class="flex flex-wrap gap-1">${hintBadges}</div>
+      ${guessedBadge}
     `;
     grid.appendChild(card);
   });
 
   if (!grid.children.length) {
-    grid.innerHTML = '<p class="text-gray-500 text-sm italic">Aguardando outros jogadores...</p>';
+    grid.innerHTML = '<p class="text-zinc-600 text-xs">Aguardando outros jogadores.</p>';
   }
 }
 
 function renderMyObject() {
   const emojiEl = document.getElementById("my-emoji");
   const nameEl  = document.getElementById("my-object-name");
-  if (emojiEl) emojiEl.textContent = state.myObjectEmoji || "❓";
+  if (emojiEl) emojiEl.textContent = state.myObjectEmoji || "·";
   if (nameEl)  nameEl.textContent  = state.myObjectName  || "";
 }
 
@@ -775,16 +772,15 @@ function renderScoreboard(gameState) {
 
   const sorted = Object.values(gameState.players).sort((a, b) => b.score - a.score);
   board.innerHTML = sorted.map((p, i) => {
-    const medal = i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : `${i+1}.`;
     const isMe = p.id === state.playerId;
     return `
-      <div class="flex items-center justify-between ${isMe ? "bg-indigo-950/60 border border-indigo-800/50" : "bg-gray-800"} rounded-lg px-3 py-2">
+      <div class="flex items-center justify-between px-2 py-1.5 rounded ${isMe ? "bg-zinc-800" : ""}">
         <div class="flex items-center gap-2">
-          <span>${medal}</span>
-          <span class="text-sm ${isMe ? "text-indigo-200 font-bold" : "text-gray-200"}">${escapeHtml(p.name)}</span>
-          ${isMe ? '<span class="text-xs text-indigo-400">(você)</span>' : ""}
+          <span class="text-xs text-zinc-500 tabular-nums w-4">${i+1}</span>
+          <span class="text-sm ${isMe ? "text-zinc-100" : "text-zinc-300"}">${escapeHtml(p.name)}</span>
+          ${isMe ? '<span class="text-xs text-zinc-500">(você)</span>' : ""}
         </div>
-        <span class="font-bold text-green-400">${p.score}</span>
+        <span class="text-sm text-zinc-200 tabular-nums">${p.score}</span>
       </div>
     `;
   }).join("");
@@ -796,38 +792,38 @@ function renderExchanges(gameState) {
 
   const exchanges = gameState.private_exchanges || [];
   if (!exchanges.length) {
-    list.innerHTML = '<p class="text-xs text-gray-500 italic">Nenhuma troca ainda</p>';
+    list.innerHTML = '<p class="text-xs text-zinc-600">—</p>';
     return;
   }
 
   list.innerHTML = exchanges.map(ex => {
     const statusColor = {
       pending:  "text-amber-400",
-      accepted: "text-green-400",
+      accepted: "text-emerald-400",
       rejected: "text-red-400",
-    }[ex.status] || "text-gray-400";
+    }[ex.status] || "text-zinc-400";
 
-    const statusLabel = { pending: "⏳ Pendente", accepted: "✅ Aceita", rejected: "❌ Recusada" }[ex.status];
+    const statusLabel = { pending: "pendente", accepted: "aceita", rejected: "recusada" }[ex.status];
 
     const isParticipant = ex.from_id === state.playerId || ex.to_id === state.playerId;
     const hintsHtml = (isParticipant || ex.spied) && ex.status === "accepted"
-      ? `<div class="mt-1.5 text-xs space-y-0.5">
-          <div class="text-gray-300">${escapeHtml(ex.from_name)}: <span class="font-mono text-purple-300">${escapeHtml(ex.from_hint)}</span></div>
-          <div class="text-gray-300">${escapeHtml(ex.to_name)}: <span class="font-mono text-purple-300">${escapeHtml(ex.to_hint)}</span></div>
+      ? `<div class="mt-2 text-xs space-y-0.5">
+          <div class="text-zinc-400">${escapeHtml(ex.from_name)}: <span class="font-mono text-zinc-200">${escapeHtml(ex.from_hint)}</span></div>
+          <div class="text-zinc-400">${escapeHtml(ex.to_name)}: <span class="font-mono text-zinc-200">${escapeHtml(ex.to_hint)}</span></div>
         </div>`
       : "";
 
     const spyBtn = (!isParticipant && ex.status === "accepted")
       ? `<button onclick="openSpy('${ex.id}','${escapeHtml(ex.from_name)}','${escapeHtml(ex.to_name)}')"
-          class="text-xs bg-amber-900/50 hover:bg-amber-900 text-amber-300 px-2 py-0.5 rounded transition mt-1.5">
-          🕵️ Espionar
+          class="text-xs bg-zinc-800 hover:bg-zinc-700 text-zinc-200 px-2 py-1 rounded transition mt-2">
+          Espionar
         </button>`
       : "";
 
     return `
-      <div class="bg-gray-800 rounded-xl p-3 border border-gray-700">
+      <div class="border border-zinc-800 rounded-md p-2.5 bg-zinc-950">
         <div class="flex items-center justify-between">
-          <span class="text-xs text-gray-300 font-medium">${escapeHtml(ex.from_name)} ↔ ${escapeHtml(ex.to_name)}</span>
+          <span class="text-xs text-zinc-300">${escapeHtml(ex.from_name)} · ${escapeHtml(ex.to_name)}</span>
           <span class="text-xs ${statusColor}">${statusLabel}</span>
         </div>
         ${hintsHtml}
@@ -844,43 +840,41 @@ function renderNotifications() {
 
   const items = [];
 
-  // Validações pendentes
   state.pendingValidations.forEach(v => {
     items.push(`
-      <div class="bg-amber-900/30 border border-amber-700/40 rounded-xl p-3">
-        <p class="text-sm text-amber-200 mb-2">
-          <strong>${escapeHtml(v.guesser_name)}</strong> disse que seu objeto é
-          <strong class="text-white">"${escapeHtml(v.guess)}"</strong>. Está correto?
+      <div class="border border-zinc-800 rounded-md p-3 bg-zinc-950">
+        <p class="text-sm text-zinc-300 mb-2">
+          <span class="font-medium text-zinc-100">${escapeHtml(v.guesser_name)}</span> diz que seu objeto é
+          <span class="font-medium text-zinc-100">"${escapeHtml(v.guess)}"</span>. Está correto?
         </p>
         <div class="flex gap-2">
           <button onclick="validateGuess('${v.guess_id}', true)"
-            class="flex-1 bg-green-700 hover:bg-green-600 text-white text-sm font-bold py-1.5 rounded-lg transition">
-            ✅ Sim
+            class="flex-1 bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium py-1.5 rounded-md transition">
+            Sim
           </button>
           <button onclick="validateGuess('${v.guess_id}', false)"
-            class="flex-1 bg-red-700 hover:bg-red-600 text-white text-sm font-bold py-1.5 rounded-lg transition">
-            ❌ Não
+            class="flex-1 bg-zinc-800 hover:bg-zinc-700 text-zinc-100 text-sm font-medium py-1.5 rounded-md transition">
+            Não
           </button>
         </div>
       </div>
     `);
   });
 
-  // Pedidos de troca pendentes
   state.pendingExchangeRequests.forEach(r => {
     items.push(`
-      <div class="bg-purple-900/30 border border-purple-700/40 rounded-xl p-3">
-        <p class="text-sm text-purple-200 mb-2">
-          <strong>${escapeHtml(r.from_name)}</strong> quer trocar dicas com você!
+      <div class="border border-zinc-800 rounded-md p-3 bg-zinc-950">
+        <p class="text-sm text-zinc-300 mb-2">
+          <span class="font-medium text-zinc-100">${escapeHtml(r.from_name)}</span> quer trocar dicas com você.
         </p>
         <div class="flex gap-2">
           <button onclick="respondToExchange('${r.exchange_id}', true)"
-            class="flex-1 bg-purple-700 hover:bg-purple-600 text-white text-sm font-bold py-1.5 rounded-lg transition">
-            ✅ Aceitar
+            class="flex-1 bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium py-1.5 rounded-md transition">
+            Aceitar
           </button>
           <button onclick="respondToExchange('${r.exchange_id}', false)"
-            class="flex-1 bg-gray-700 hover:bg-gray-600 text-white text-sm font-bold py-1.5 rounded-lg transition">
-            ❌ Recusar
+            class="flex-1 bg-zinc-800 hover:bg-zinc-700 text-zinc-100 text-sm font-medium py-1.5 rounded-md transition">
+            Recusar
           </button>
         </div>
       </div>
@@ -907,15 +901,14 @@ function renderLobbyPlayersFromState(gameState) {
 
   const players = Object.values(gameState.players || {});
   container.innerHTML = players.map(p => `
-    <div class="flex items-center justify-between bg-gray-800 rounded-xl px-4 py-3">
-      <div class="flex items-center gap-3">
-        <span class="text-xl">${p.is_host ? "👑" : "🎭"}</span>
-        <span class="font-medium text-white">${escapeHtml(p.name)}</span>
-        ${p.id === state.playerId ? '<span class="text-xs text-indigo-400">(você)</span>' : ""}
+    <div class="flex items-center justify-between border border-zinc-800 rounded-md px-3 py-2 bg-zinc-950">
+      <div class="flex items-center gap-2">
+        <span class="text-sm text-zinc-100">${escapeHtml(p.name)}</span>
+        ${p.id === state.playerId ? '<span class="text-xs text-zinc-500">(você)</span>' : ""}
       </div>
-      ${p.is_host ? '<span class="text-xs text-amber-400 bg-amber-900/30 px-2 py-0.5 rounded-full">Host</span>' : ""}
+      ${p.is_host ? '<span class="text-[10px] uppercase tracking-wider text-zinc-500">host</span>' : ""}
     </div>
-  `).join("") || '<p class="text-gray-500 text-sm italic">Nenhum jogador ainda...</p>';
+  `).join("") || '<p class="text-zinc-600 text-xs">Nenhum jogador ainda.</p>';
 
   // Controles do host
   const hostCtrl = document.getElementById("host-controls");
@@ -930,7 +923,7 @@ function renderVotingScores(scores) {
   if (!container) return;
 
   if (!scores) {
-    container.innerHTML = "<p class='text-sm text-gray-400'>Carregando...</p>";
+    container.innerHTML = "<p class='text-sm text-zinc-500'>Carregando.</p>";
     return;
   }
 
@@ -938,15 +931,16 @@ function renderVotingScores(scores) {
   const names = state.lastGameState?.players || {};
 
   container.innerHTML = `
-    <div class="text-xs text-gray-400 font-semibold uppercase tracking-wider mb-2">Pontuação atual</div>
+    <div class="text-xs text-zinc-500 mb-2">Pontuação atual</div>
     ${sorted.map(([pid, pts], i) => {
-      const medal = i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : `${i+1}.`;
       const pname = names[pid]?.name || pid;
       const isMe = pid === state.playerId;
       return `
-        <div class="flex justify-between items-center ${isMe ? "text-indigo-300" : "text-white"}">
-          <span class="text-sm">${medal} ${escapeHtml(pname)} ${isMe ? "(você)" : ""}</span>
-          <span class="font-bold text-green-400">${pts} pts</span>
+        <div class="flex justify-between items-center text-sm">
+          <span class="${isMe ? "text-zinc-100" : "text-zinc-300"}">
+            <span class="text-zinc-500 tabular-nums mr-2">${i+1}</span>${escapeHtml(pname)}${isMe ? " (você)" : ""}
+          </span>
+          <span class="text-zinc-200 tabular-nums">${pts}</span>
         </div>
       `;
     }).join("")}
@@ -965,18 +959,17 @@ function renderFinalScores(scores) {
   if (!container || !scores) return;
 
   container.innerHTML = scores.map((p, i) => {
-    const medal = i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : `${i+1}.`;
     const isMe = p.id === state.playerId;
     return `
-      <div class="flex items-center justify-between ${isMe ? "bg-indigo-950 border border-indigo-700" : "bg-gray-800"} rounded-xl px-5 py-4">
+      <div class="flex items-center justify-between border ${isMe ? "border-zinc-600 bg-zinc-800" : "border-zinc-800 bg-zinc-950"} rounded-md px-4 py-3">
         <div class="flex items-center gap-3">
-          <span class="text-2xl">${medal}</span>
+          <span class="text-sm text-zinc-500 tabular-nums w-4">${i+1}</span>
           <div>
-            <div class="font-bold text-white">${escapeHtml(p.name)}</div>
-            ${isMe ? '<div class="text-xs text-indigo-400">você</div>' : ""}
+            <div class="text-sm text-zinc-100">${escapeHtml(p.name)}</div>
+            ${isMe ? '<div class="text-xs text-zinc-500">você</div>' : ""}
           </div>
         </div>
-        <span class="text-3xl font-black text-green-400">${p.score}</span>
+        <span class="text-lg text-zinc-100 tabular-nums">${p.score}</span>
       </div>
     `;
   }).join("");

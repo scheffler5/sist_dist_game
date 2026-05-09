@@ -1,6 +1,7 @@
 from typing import Tuple
 
 from core.scoring import assign_objects
+from database import db
 from domain.constants import GameStatus
 from services.base import BaseService
 
@@ -67,3 +68,4 @@ class VotingService(BaseService):
                 "final_scores": scores,
                 "state": game.to_dict(),
             })
+            await db.delete_chat(game_id)

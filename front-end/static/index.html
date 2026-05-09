@@ -3,372 +3,304 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>🕵️ AdivinhAí — Jogo de Adivinhação</title>
+  <title>AdivinhAí</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    [x-cloak] { display: none !important; }
+    body { font-feature-settings: "ss01", "cv11"; }
 
-    .card-flip { perspective: 800px; }
-    .card-flip-inner {
-      transition: transform 0.6s;
-      transform-style: preserve-3d;
-    }
-    .card-flip.flipped .card-flip-inner { transform: rotateY(180deg); }
-    .card-front, .card-back {
-      backface-visibility: hidden;
-    }
-    .card-back { transform: rotateY(180deg); }
-
-    .pulse-dot {
-      animation: pulse 1.5s cubic-bezier(0.4,0,0.6,1) infinite;
-    }
-    @keyframes pulse {
-      0%,100% { opacity:1; }
-      50% { opacity:.4; }
-    }
-
-    .toast-enter {
-      animation: slideIn 0.3s ease-out;
-    }
+    .toast-enter { animation: slideIn 0.2s ease-out; }
     @keyframes slideIn {
-      from { transform: translateX(120%); opacity: 0; }
-      to   { transform: translateX(0);   opacity: 1; }
+      from { transform: translateX(20px); opacity: 0; }
+      to   { transform: translateX(0); opacity: 1; }
     }
-    .toast-exit {
-      animation: slideOut 0.3s ease-in forwards;
-    }
+    .toast-exit { animation: slideOut 0.2s ease-in forwards; }
     @keyframes slideOut {
-      to { transform: translateX(120%); opacity: 0; }
+      to { transform: translateX(20px); opacity: 0; }
     }
 
-    ::-webkit-scrollbar { width: 6px; }
-    ::-webkit-scrollbar-track { background: #1f2937; }
-    ::-webkit-scrollbar-thumb { background: #4b5563; border-radius: 3px; }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #3f3f46; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: #52525b; }
 
-    .glow-indigo { box-shadow: 0 0 20px rgba(99,102,241,0.3); }
-    .glow-green  { box-shadow: 0 0 20px rgba(34,197,94,0.3); }
-    .glow-red    { box-shadow: 0 0 20px rgba(239,68,68,0.3); }
+    input:focus, select:focus, textarea:focus { outline: none; }
   </style>
-  <script>
-    tailwind.config = {
-      darkMode: 'class',
-      theme: {
-        extend: {
-          colors: {
-            dark: { DEFAULT: '#0f1117', card: '#1a1d27', border: '#2a2d3e' }
-          }
-        }
-      }
-    }
-  </script>
 </head>
-<body class="bg-gray-950 text-gray-100 min-h-screen font-sans antialiased">
+<body class="bg-zinc-950 text-zinc-100 min-h-screen antialiased font-sans">
 
-<!-- Toast container -->
 <div id="toasts" class="fixed top-4 right-4 z-50 flex flex-col gap-2 w-80"></div>
 
 <!-- ============================================================ -->
-<!--  TELA 1 — LOGIN / LOBBY                                      -->
+<!--  TELA 1 — LOGIN                                              -->
 <!-- ============================================================ -->
 <div id="screen-login" class="flex items-center justify-center min-h-screen p-4">
-  <div class="w-full max-w-md">
-    <!-- Header -->
-    <div class="text-center mb-10">
-      <div class="text-7xl mb-4">🕵️</div>
-      <h1 class="text-4xl font-black tracking-tight text-white">AdivinhAí</h1>
-      <p class="text-gray-400 mt-2">Jogo multiplayer de adivinhação com dicas</p>
+  <div class="w-full max-w-sm">
+    <div class="mb-8">
+      <h1 class="text-2xl font-semibold text-zinc-100">AdivinhAí</h1>
+      <p class="text-sm text-zinc-500 mt-1">Jogo multiplayer de adivinhação.</p>
     </div>
 
-    <!-- Card de entrada -->
-    <div class="bg-gray-900 border border-gray-800 rounded-2xl p-8 shadow-2xl">
-      <div class="space-y-5">
+    <div class="bg-zinc-900 border border-zinc-800 rounded-lg p-6">
+      <div class="space-y-4">
         <div>
-          <label class="block text-sm font-medium text-gray-400 mb-1.5">Seu nome</label>
+          <label class="block text-xs font-medium text-zinc-400 mb-1.5">Nome</label>
           <input
             id="input-name"
             type="text"
             maxlength="20"
-            placeholder="Como quer ser chamado?"
-            class="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition"
+            placeholder="Seu nome"
+            class="w-full bg-zinc-950 border border-zinc-800 rounded-md px-3 py-2 text-sm text-zinc-100 placeholder-zinc-600 focus:border-zinc-600 transition"
           />
         </div>
 
         <div>
-          <label class="block text-sm font-medium text-gray-400 mb-1.5">Código da sala <span class="text-gray-500">(vazio = criar nova)</span></label>
+          <label class="block text-xs font-medium text-zinc-400 mb-1.5">Código da sala <span class="text-zinc-600">(opcional)</span></label>
           <input
             id="input-gameid"
             type="text"
             maxlength="10"
-            placeholder="Ex: ABC123"
-            class="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition uppercase tracking-widest"
+            placeholder="Vazio = criar nova sala"
+            class="w-full bg-zinc-950 border border-zinc-800 rounded-md px-3 py-2 text-sm text-zinc-100 placeholder-zinc-600 focus:border-zinc-600 transition uppercase tracking-wider"
             oninput="this.value = this.value.toUpperCase()"
           />
         </div>
 
         <button
           onclick="joinGame()"
-          class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3.5 rounded-xl transition active:scale-95 shadow-lg shadow-indigo-900/40"
+          class="w-full bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium py-2 rounded-md transition"
         >
-          Entrar no Jogo →
+          Entrar
         </button>
       </div>
     </div>
-
-    <p class="text-center text-gray-600 text-xs mt-6">Comunicação via gRPC · Tailored for fun</p>
   </div>
 </div>
 
 <!-- ============================================================ -->
-<!--  TELA 2 — SALA DE ESPERA                                     -->
+<!--  TELA 2 — LOBBY                                              -->
 <!-- ============================================================ -->
 <div id="screen-lobby" class="hidden flex-col min-h-screen p-4">
   <div class="max-w-2xl mx-auto w-full">
-    <!-- Header da sala -->
-    <div class="bg-gray-900 border border-gray-800 rounded-2xl p-6 mb-4">
-      <div class="flex items-center justify-between mb-4">
+    <div class="bg-zinc-900 border border-zinc-800 rounded-lg p-6 mb-4">
+      <div class="flex items-start justify-between mb-6">
         <div>
-          <h2 class="text-2xl font-bold text-white">Sala de Espera</h2>
-          <p class="text-gray-400 text-sm mt-1">Aguardando jogadores...</p>
+          <h2 class="text-lg font-semibold text-zinc-100">Sala de espera</h2>
+          <p class="text-sm text-zinc-500 mt-0.5">Aguardando jogadores.</p>
         </div>
-        <div class="bg-gray-800 rounded-xl px-4 py-2 text-center">
-          <div class="text-xs text-gray-400 mb-0.5">Código da Sala</div>
-          <div id="lobby-code" class="text-2xl font-black tracking-widest text-indigo-400"></div>
+        <div class="text-right">
+          <div class="text-xs text-zinc-500">Código</div>
+          <div id="lobby-code" class="text-lg font-mono font-medium tracking-wider text-zinc-100 mt-0.5"></div>
         </div>
       </div>
 
-      <!-- Config (host only) -->
-      <div id="host-controls" class="hidden bg-gray-800 rounded-xl p-4 mb-4">
-        <label class="block text-sm font-medium text-gray-400 mb-2">Número máximo de turnos</label>
+      <div id="host-controls" class="hidden border border-zinc-800 rounded-md p-4 mb-4 bg-zinc-950">
+        <label class="block text-xs font-medium text-zinc-400 mb-2">Número de turnos por rodada</label>
         <div class="flex gap-2">
           <input id="max-turns" type="number" min="1" max="20" value="5"
-            class="w-24 bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white text-center focus:outline-none focus:border-indigo-500" />
+            class="w-20 bg-zinc-900 border border-zinc-800 rounded-md px-2 py-1.5 text-sm text-zinc-100 text-center focus:border-zinc-600" />
           <button onclick="startGame()"
-            class="flex-1 bg-green-600 hover:bg-green-500 text-white font-bold py-2 px-6 rounded-xl transition active:scale-95">
-            🚀 Iniciar Jogo
+            class="flex-1 bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium py-1.5 px-4 rounded-md transition">
+            Iniciar jogo
           </button>
         </div>
-        <p class="text-xs text-gray-500 mt-2">Precisa de pelo menos 2 jogadores</p>
+        <p class="text-xs text-zinc-500 mt-2">Mínimo de 2 jogadores.</p>
       </div>
 
-      <!-- Lista de jogadores -->
       <div>
-        <h3 class="text-sm font-medium text-gray-400 mb-3">Jogadores conectados</h3>
-        <div id="lobby-players" class="space-y-2"></div>
+        <h3 class="text-xs font-medium text-zinc-400 mb-2">Jogadores conectados</h3>
+        <div id="lobby-players" class="space-y-1.5"></div>
       </div>
     </div>
   </div>
 </div>
 
 <!-- ============================================================ -->
-<!--  TELA 3 — JOGO PRINCIPAL                                     -->
+<!--  TELA 3 — JOGO                                               -->
 <!-- ============================================================ -->
 <div id="screen-game" class="hidden min-h-screen">
-  <!-- Top bar -->
-  <div class="bg-gray-900 border-b border-gray-800 px-4 py-3 sticky top-0 z-10">
+  <div class="bg-zinc-900 border-b border-zinc-800 px-4 py-2.5 sticky top-0 z-10">
     <div class="max-w-7xl mx-auto flex items-center justify-between">
       <div class="flex items-center gap-4">
-        <span class="text-2xl font-black text-white">🕵️ AdivinhAí</span>
-        <div class="flex gap-3 text-sm">
-          <span class="bg-gray-800 px-3 py-1 rounded-full text-gray-300">
-            Sala: <span id="hud-gameid" class="text-indigo-400 font-mono font-bold"></span>
-          </span>
-          <span class="bg-gray-800 px-3 py-1 rounded-full text-gray-300">
-            Turno: <span id="hud-turn" class="text-yellow-400 font-bold"></span>
-          </span>
-          <span class="bg-gray-800 px-3 py-1 rounded-full text-gray-300">
-            Rodada: <span id="hud-round" class="text-purple-400 font-bold"></span>
-          </span>
+        <span class="text-sm font-semibold text-zinc-100">AdivinhAí</span>
+        <div class="flex items-center gap-3 text-xs text-zinc-400">
+          <span>Sala <span id="hud-gameid" class="text-zinc-200 font-mono"></span></span>
+          <span class="text-zinc-700">·</span>
+          <span>Turno <span id="hud-turn" class="text-zinc-200"></span></span>
+          <span class="text-zinc-700">·</span>
+          <span>Rodada <span id="hud-round" class="text-zinc-200"></span></span>
         </div>
       </div>
-      <div class="flex items-center gap-2">
-        <span class="text-sm text-gray-400">Seus pontos:</span>
-        <span id="hud-score" class="text-2xl font-black text-green-400">0</span>
+      <div class="flex items-center gap-2 text-xs">
+        <span class="text-zinc-500">Pontos</span>
+        <span id="hud-score" class="text-zinc-100 font-medium tabular-nums">0</span>
       </div>
     </div>
   </div>
 
-  <div class="max-w-7xl mx-auto px-4 py-6">
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+  <div class="max-w-7xl mx-auto px-4 py-5">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
 
-      <!-- Coluna Esquerda: Seu card + Ações -->
+      <!-- Coluna esquerda: objeto + ações -->
       <div class="lg:col-span-1 space-y-4">
 
-        <!-- Seu objeto secreto -->
-        <div class="bg-gray-900 border border-indigo-900/50 rounded-2xl p-5 glow-indigo">
-          <h3 class="text-xs font-semibold text-indigo-400 uppercase tracking-wider mb-3">🔒 Seu Objeto Secreto</h3>
-          <div class="text-center py-4">
-            <div id="my-emoji" class="text-8xl mb-2 select-none">❓</div>
-            <div id="my-object-name" class="text-2xl font-black text-white capitalize"></div>
-            <div class="text-xs text-gray-500 mt-1">Só você vê isso</div>
+        <div class="bg-zinc-900 border border-zinc-800 rounded-lg p-5">
+          <h3 class="text-xs font-medium text-zinc-500 mb-3">Seu objeto secreto</h3>
+          <div class="text-center py-2">
+            <div id="my-emoji" class="text-6xl mb-1 select-none">·</div>
+            <div id="my-object-name" class="text-base font-medium text-zinc-100 capitalize"></div>
+            <div class="text-xs text-zinc-500 mt-1">visível apenas para você</div>
           </div>
 
-          <div class="mt-3 bg-gray-800 rounded-xl p-3">
-            <div class="text-xs text-gray-400 mb-1.5 font-medium">Suas dicas públicas enviadas:</div>
-            <div id="my-hints-list" class="flex flex-wrap gap-1.5">
-              <span class="text-xs text-gray-500 italic">Nenhuma ainda</span>
+          <div class="mt-4 pt-3 border-t border-zinc-800">
+            <div class="text-xs text-zinc-500 mb-2">Dicas que você publicou</div>
+            <div id="my-hints-list" class="flex flex-wrap gap-1">
+              <span class="text-xs text-zinc-600">—</span>
             </div>
           </div>
         </div>
 
-        <!-- Painel de Ações -->
-        <div class="bg-gray-900 border border-gray-800 rounded-2xl p-5 space-y-3">
-          <h3 class="text-xs font-semibold text-gray-400 uppercase tracking-wider">⚡ Ações</h3>
+        <div class="bg-zinc-900 border border-zinc-800 rounded-lg p-5 space-y-4">
+          <h3 class="text-xs font-medium text-zinc-500">Ações</h3>
 
-          <!-- Enviar dica pública -->
-          <div class="space-y-2">
-            <label class="text-sm text-gray-300 font-medium">Enviar dica pública (1 palavra)</label>
+          <div class="space-y-1.5">
+            <label class="block text-xs text-zinc-400">Dica pública (1 palavra)</label>
             <div class="flex gap-2">
-              <input id="hint-input" type="text" placeholder="uma palavra..."
+              <input id="hint-input" type="text" placeholder="palavra"
                 maxlength="30"
-                class="flex-1 bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-indigo-500"
+                class="flex-1 bg-zinc-950 border border-zinc-800 rounded-md px-2.5 py-1.5 text-sm text-zinc-100 placeholder-zinc-600 focus:border-zinc-600"
                 onkeydown="if(event.key==='Enter') sendHint()" />
               <button onclick="sendHint()"
-                class="bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-bold px-4 py-2 rounded-lg transition active:scale-95">
+                class="bg-zinc-800 hover:bg-zinc-700 text-zinc-100 text-sm font-medium px-3 py-1.5 rounded-md transition">
                 Enviar
               </button>
             </div>
-            <p id="hint-status" class="text-xs text-gray-500"></p>
+            <p id="hint-status" class="text-xs text-zinc-500"></p>
           </div>
 
-          <div class="border-t border-gray-800 pt-3 space-y-2">
-            <!-- Palpite -->
-            <label class="text-sm text-gray-300 font-medium">Tentar adivinhar o objeto de alguém</label>
-            <div class="space-y-2">
-              <select id="guess-target"
-                class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500">
-                <option value="">Escolha o jogador...</option>
-              </select>
-              <div class="flex gap-2">
-                <input id="guess-input" type="text" placeholder="Meu palpite..."
-                  maxlength="30"
-                  class="flex-1 bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-green-500"
-                  onkeydown="if(event.key==='Enter') sendGuess()" />
-                <button onclick="sendGuess()"
-                  class="bg-green-600 hover:bg-green-500 text-white text-sm font-bold px-4 py-2 rounded-lg transition active:scale-95">
-                  🎯
-                </button>
-              </div>
+          <div class="border-t border-zinc-800 pt-4 space-y-1.5">
+            <label class="block text-xs text-zinc-400">Adivinhar o objeto de outro jogador</label>
+            <select id="guess-target"
+              class="w-full bg-zinc-950 border border-zinc-800 rounded-md px-2.5 py-1.5 text-sm text-zinc-100 focus:border-zinc-600">
+              <option value="">Escolha o jogador</option>
+            </select>
+            <div class="flex gap-2">
+              <input id="guess-input" type="text" placeholder="palpite"
+                maxlength="30"
+                class="flex-1 bg-zinc-950 border border-zinc-800 rounded-md px-2.5 py-1.5 text-sm text-zinc-100 placeholder-zinc-600 focus:border-zinc-600"
+                onkeydown="if(event.key==='Enter') sendGuess()" />
+              <button onclick="sendGuess()"
+                class="bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium px-3 py-1.5 rounded-md transition">
+                Adivinhar
+              </button>
             </div>
           </div>
 
-          <div class="border-t border-gray-800 pt-3 space-y-2">
-            <!-- Troca privada -->
-            <label class="text-sm text-gray-300 font-medium">Solicitar troca privada de dica</label>
-            <div class="space-y-2">
-              <select id="exchange-target"
-                class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-purple-500">
-                <option value="">Escolha o jogador...</option>
-              </select>
-              <div class="flex gap-2">
-                <input id="exchange-hint" type="text" placeholder="Sua dica privada (1 palavra)..."
-                  maxlength="30"
-                  class="flex-1 bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-purple-500" />
-                <button onclick="requestExchange()"
-                  class="bg-purple-600 hover:bg-purple-500 text-white text-sm font-bold px-3 py-2 rounded-lg transition active:scale-95">
-                  🤝
-                </button>
-              </div>
-              <p id="exchange-used-msg" class="hidden text-xs text-amber-400">✓ Troca já utilizada nesta rodada</p>
+          <div class="border-t border-zinc-800 pt-4 space-y-1.5">
+            <label class="block text-xs text-zinc-400">Solicitar troca privada de dica</label>
+            <select id="exchange-target"
+              class="w-full bg-zinc-950 border border-zinc-800 rounded-md px-2.5 py-1.5 text-sm text-zinc-100 focus:border-zinc-600">
+              <option value="">Escolha o jogador</option>
+            </select>
+            <div class="flex gap-2">
+              <input id="exchange-hint" type="text" placeholder="sua dica privada"
+                maxlength="30"
+                class="flex-1 bg-zinc-950 border border-zinc-800 rounded-md px-2.5 py-1.5 text-sm text-zinc-100 placeholder-zinc-600 focus:border-zinc-600" />
+              <button onclick="requestExchange()"
+                class="bg-zinc-800 hover:bg-zinc-700 text-zinc-100 text-sm font-medium px-3 py-1.5 rounded-md transition">
+                Solicitar
+              </button>
             </div>
+            <p id="exchange-used-msg" class="hidden text-xs text-zinc-500">Troca já utilizada nesta rodada.</p>
           </div>
 
-          <!-- Avançar turno (host only) -->
-          <div id="host-turn-controls" class="hidden border-t border-gray-800 pt-3">
+          <div id="host-turn-controls" class="hidden border-t border-zinc-800 pt-4">
             <button onclick="advanceTurn()"
-              class="w-full bg-amber-600 hover:bg-amber-500 text-white font-bold py-2.5 rounded-xl transition active:scale-95">
-              ⏭ Avançar Turno
+              class="w-full bg-zinc-800 hover:bg-zinc-700 text-zinc-100 text-sm font-medium py-2 rounded-md transition">
+              Avançar turno
             </button>
           </div>
         </div>
       </div>
 
-      <!-- Coluna Central: Jogadores e Trocas -->
+      <!-- Coluna central: jogadores + placar -->
       <div class="lg:col-span-1 space-y-4">
-        <!-- Cards dos outros jogadores -->
-        <div class="bg-gray-900 border border-gray-800 rounded-2xl p-5">
-          <h3 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">👥 Outros Jogadores</h3>
-          <div id="players-grid" class="space-y-3"></div>
+        <div class="bg-zinc-900 border border-zinc-800 rounded-lg p-5">
+          <h3 class="text-xs font-medium text-zinc-500 mb-3">Outros jogadores</h3>
+          <div id="players-grid" class="space-y-2"></div>
         </div>
 
-        <!-- Placar -->
-        <div class="bg-gray-900 border border-gray-800 rounded-2xl p-5">
-          <h3 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">🏆 Placar</h3>
-          <div id="scoreboard" class="space-y-2"></div>
+        <div class="bg-zinc-900 border border-zinc-800 rounded-lg p-5">
+          <h3 class="text-xs font-medium text-zinc-500 mb-3">Placar</h3>
+          <div id="scoreboard" class="space-y-1"></div>
         </div>
       </div>
 
-      <!-- Coluna Direita: Chat + Trocas + Validações -->
+      <!-- Coluna direita: notificações + trocas + chat -->
       <div class="lg:col-span-1 space-y-4">
 
-        <!-- Notificações do jogo -->
-        <div id="notifications-panel" class="hidden bg-gray-900 border border-amber-900/40 rounded-2xl p-5">
-          <h3 class="text-xs font-semibold text-amber-400 uppercase tracking-wider mb-3">🔔 Aguardando Sua Ação</h3>
+        <div id="notifications-panel" class="hidden bg-zinc-900 border border-zinc-800 rounded-lg p-5">
+          <h3 class="text-xs font-medium text-zinc-500 mb-3">Aguardando sua ação</h3>
           <div id="notifications-list" class="space-y-2"></div>
         </div>
 
-        <!-- Trocas privadas -->
-        <div class="bg-gray-900 border border-gray-800 rounded-2xl p-5">
-          <h3 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">🔐 Trocas Privadas</h3>
-          <div id="exchanges-list" class="space-y-2">
-            <p class="text-xs text-gray-500 italic">Nenhuma troca ainda</p>
+        <div class="bg-zinc-900 border border-zinc-800 rounded-lg p-5">
+          <h3 class="text-xs font-medium text-zinc-500 mb-3">Trocas privadas</h3>
+          <div id="exchanges-list" class="space-y-1.5">
+            <p class="text-xs text-zinc-600">—</p>
           </div>
         </div>
 
-        <!-- Chat -->
-        <div class="bg-gray-900 border border-gray-800 rounded-2xl p-5 flex flex-col" style="height: 380px;">
-          <h3 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">💬 Chat</h3>
+        <div class="bg-zinc-900 border border-zinc-800 rounded-lg p-5 flex flex-col" style="height: 360px;">
+          <h3 class="text-xs font-medium text-zinc-500 mb-3">Chat</h3>
           <div id="chat-messages" class="flex-1 overflow-y-auto space-y-2 mb-3 pr-1"></div>
           <div class="flex gap-2">
-            <input id="chat-input" type="text" placeholder="Mensagem..."
+            <input id="chat-input" type="text" placeholder="Mensagem"
               maxlength="200"
-              class="flex-1 bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-gray-500"
+              class="flex-1 bg-zinc-950 border border-zinc-800 rounded-md px-2.5 py-1.5 text-sm text-zinc-100 placeholder-zinc-600 focus:border-zinc-600"
               onkeydown="if(event.key==='Enter') sendChat()" />
             <button onclick="sendChat()"
-              class="bg-gray-700 hover:bg-gray-600 text-white text-sm px-3 py-2 rounded-lg transition">
-              ↑
+              class="bg-zinc-800 hover:bg-zinc-700 text-zinc-100 text-sm px-3 py-1.5 rounded-md transition">
+              Enviar
             </button>
           </div>
         </div>
       </div>
 
-    </div><!-- end grid -->
-  </div><!-- end main content -->
+    </div>
+  </div>
 
-  <!-- Feed de Eventos do Jogo -->
-  <div class="fixed bottom-4 left-4 z-20 w-80 space-y-2 pointer-events-none" id="event-feed"></div>
+  <div class="fixed bottom-4 left-4 z-20 w-80 space-y-1.5 pointer-events-none" id="event-feed"></div>
 </div>
 
 <!-- ============================================================ -->
 <!--  TELA 4 — VOTAÇÃO                                            -->
 <!-- ============================================================ -->
 <div id="screen-voting" class="hidden flex items-center justify-center min-h-screen p-4">
-  <div class="max-w-lg w-full">
-    <div class="bg-gray-900 border border-gray-800 rounded-2xl p-8 text-center">
-      <div class="text-6xl mb-4">🗳️</div>
-      <h2 class="text-3xl font-black text-white mb-2">Fim dos Turnos!</h2>
-      <p class="text-gray-400 mb-6">Desejam continuar com uma nova rodada?</p>
+  <div class="max-w-md w-full">
+    <div class="bg-zinc-900 border border-zinc-800 rounded-lg p-6">
+      <h2 class="text-lg font-semibold text-zinc-100 mb-1">Fim dos turnos</h2>
+      <p class="text-sm text-zinc-500 mb-5">Continuar com uma nova rodada?</p>
 
-      <div id="voting-scores" class="bg-gray-800 rounded-xl p-4 mb-6 text-left space-y-2">
-      </div>
+      <div id="voting-scores" class="border border-zinc-800 rounded-md p-4 mb-5 space-y-1"></div>
 
-      <div id="vote-buttons" class="flex gap-4">
+      <div id="vote-buttons" class="flex gap-2">
         <button onclick="vote(true)"
-          class="flex-1 bg-green-600 hover:bg-green-500 text-white font-bold py-4 rounded-xl transition active:scale-95 text-lg">
-          ✅ Continuar
+          class="flex-1 bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium py-2 rounded-md transition">
+          Continuar
         </button>
         <button onclick="vote(false)"
-          class="flex-1 bg-red-600 hover:bg-red-500 text-white font-bold py-4 rounded-xl transition active:scale-95 text-lg">
-          🏁 Encerrar
+          class="flex-1 bg-zinc-800 hover:bg-zinc-700 text-zinc-100 text-sm font-medium py-2 rounded-md transition">
+          Encerrar
         </button>
       </div>
 
-      <div id="vote-status" class="mt-4 text-sm text-gray-400 hidden">
-        Aguardando outros jogadores votarem...
+      <div id="vote-status" class="mt-4 text-xs text-zinc-500 hidden">
+        Aguardando outros jogadores votarem.
       </div>
 
-      <div id="vote-progress" class="mt-4 flex justify-center gap-6 text-sm">
-        <span class="text-green-400">✅ Continuar: <span id="vote-continue-count">0</span></span>
-        <span class="text-red-400">🏁 Encerrar: <span id="vote-end-count">0</span></span>
+      <div id="vote-progress" class="mt-4 flex justify-between text-xs text-zinc-500">
+        <span>Continuar: <span id="vote-continue-count" class="text-zinc-200">0</span></span>
+        <span>Encerrar: <span id="vote-end-count" class="text-zinc-200">0</span></span>
       </div>
     </div>
   </div>
@@ -378,16 +310,15 @@
 <!--  TELA 5 — RESULTADO FINAL                                    -->
 <!-- ============================================================ -->
 <div id="screen-result" class="hidden flex items-center justify-center min-h-screen p-4">
-  <div class="max-w-lg w-full">
-    <div class="bg-gray-900 border border-gray-800 rounded-2xl p-8 text-center">
-      <div class="text-6xl mb-4">🏆</div>
-      <h2 class="text-3xl font-black text-white mb-6">Resultado Final!</h2>
+  <div class="max-w-md w-full">
+    <div class="bg-zinc-900 border border-zinc-800 rounded-lg p-6">
+      <h2 class="text-lg font-semibold text-zinc-100 mb-5">Resultado final</h2>
 
-      <div id="final-scores" class="space-y-3 mb-8"></div>
+      <div id="final-scores" class="space-y-2 mb-6"></div>
 
       <button onclick="resetGame()"
-        class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-4 rounded-xl transition active:scale-95 text-lg">
-        🔄 Jogar Novamente
+        class="w-full bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium py-2 rounded-md transition">
+        Jogar novamente
       </button>
     </div>
   </div>
@@ -396,23 +327,23 @@
 <!-- ============================================================ -->
 <!--  MODAL — Espionar troca                                      -->
 <!-- ============================================================ -->
-<div id="modal-spy" class="hidden fixed inset-0 bg-black/70 flex items-center justify-center z-40 p-4">
-  <div class="bg-gray-900 border border-gray-800 rounded-2xl p-6 max-w-sm w-full">
-    <h3 class="text-lg font-bold text-white mb-2">🕵️ Espionar Troca</h3>
-    <p class="text-sm text-gray-400 mb-4">
-      Há <strong class="text-amber-400">40% de chance</strong> de ser descoberto e perder pontos.
-      Se tiver sucesso, verá as dicas trocadas.
+<div id="modal-spy" class="hidden fixed inset-0 bg-black/60 flex items-center justify-center z-40 p-4">
+  <div class="bg-zinc-900 border border-zinc-800 rounded-lg p-6 max-w-sm w-full">
+    <h3 class="text-base font-semibold text-zinc-100 mb-2">Espionar troca</h3>
+    <p class="text-sm text-zinc-400 mb-3">
+      Há <span class="text-zinc-200 font-medium">40% de chance</span> de ser descoberto e perder pontos.
+      Em caso de sucesso, você verá as dicas trocadas.
     </p>
-    <p class="text-sm text-gray-300 mb-4">
-      Troca entre <span id="spy-target-names" class="font-bold text-purple-300"></span>
+    <p class="text-sm text-zinc-400 mb-5">
+      Troca entre <span id="spy-target-names" class="text-zinc-100 font-medium"></span>.
     </p>
-    <div class="flex gap-3">
+    <div class="flex gap-2">
       <button onclick="confirmSpy()"
-        class="flex-1 bg-amber-600 hover:bg-amber-500 text-white font-bold py-2.5 rounded-xl transition">
-        Espionar 👀
+        class="flex-1 bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium py-2 rounded-md transition">
+        Espionar
       </button>
       <button onclick="closeSpy()"
-        class="flex-1 bg-gray-700 hover:bg-gray-600 text-white font-bold py-2.5 rounded-xl transition">
+        class="flex-1 bg-zinc-800 hover:bg-zinc-700 text-zinc-100 text-sm font-medium py-2 rounded-md transition">
         Cancelar
       </button>
     </div>

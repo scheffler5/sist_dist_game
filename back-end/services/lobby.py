@@ -2,6 +2,7 @@ import uuid
 from typing import Optional, Tuple
 
 from core.scoring import assign_objects
+from database import db
 from domain.constants import GameStatus
 from domain.models import GameState, Player
 from services.base import BaseService
@@ -18,6 +19,7 @@ class LobbyService(BaseService):
             creating = game_id not in self._games
             if creating:
                 self._games[game_id] = GameState(game_id=game_id)
+                await db.delete_chat(game_id)
 
             game = self._games[game_id]
 
