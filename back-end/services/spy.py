@@ -10,7 +10,6 @@ class SpyService(BaseService):
     async def spy_on_exchange(
         self, game_id: str, spy_id: str, exchange_id: str
     ) -> Tuple[bool, str, bool, Optional[str], Optional[str]]:
-        """Retorna (ok, message, discovered, hint1, hint2)."""
         async with self._get_lock(game_id):
             game = self._get_game(game_id)
             if not game:

@@ -1,8 +1,3 @@
-"""
-Camada de persistência MongoDB.
-Usada exclusivamente para o histórico de chat.
-"""
-
 import time
 import logging
 import os
@@ -25,10 +20,8 @@ class Database:
         try:
             self._client = AsyncIOMotorClient(MONGO_URI, serverSelectionTimeoutMS=5000)
             self._db = self._client[DB_NAME]
-            # Verifica conexão
             await self._client.admin.command("ping")
             logger.info(f"MongoDB conectado em {MONGO_URI}")
-            # Cria índice para consultas por game_id
             await self._db.chat.create_index([("game_id", 1), ("timestamp", -1)])
         except Exception as e:
             logger.warning(f"MongoDB não disponível: {e}. Chat sem persistência.")
@@ -83,5 +76,4 @@ class Database:
             self._client.close()
 
 
-# Singleton global
 db = Database()

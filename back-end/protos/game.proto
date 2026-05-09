@@ -3,37 +3,28 @@ syntax = "proto3";
 package game;
 
 service GameService {
-  // Lobby
   rpc JoinGame(JoinRequest) returns (JoinResponse);
   rpc GetGameState(PlayerRequest) returns (GameStateResponse);
   rpc StartGame(StartGameRequest) returns (ActionResponse);
   rpc KickPlayer(KickRequest) returns (ActionResponse);
 
-  // Gameplay - dicas e palpites
   rpc SendPublicHint(HintRequest) returns (ActionResponse);
   rpc GuessObject(GuessRequest) returns (ActionResponse);
   rpc ValidateGuess(ValidateRequest) returns (ActionResponse);
   rpc AdvanceTurn(PlayerRequest) returns (ActionResponse);
 
-  // Troca privada de dicas
   rpc RequestPrivateExchange(ExchangeRequest) returns (ActionResponse);
   rpc RespondToExchange(ExchangeResponseRequest) returns (ActionResponse);
 
-  // Espionagem
   rpc SpyOnExchange(SpyRequest) returns (ActionResponse);
 
-  // Votação para continuar
   rpc VoteContinue(VoteRequest) returns (ActionResponse);
 
-  // Chat (persistido no MongoDB)
   rpc SendChatMessage(ChatMessageRequest) returns (ActionResponse);
   rpc GetChatHistory(ChatHistoryRequest) returns (ChatHistoryResponse);
 
-  // Stream de eventos em tempo real (server-side streaming)
   rpc StreamEvents(StreamRequest) returns (stream GameEvent);
 }
-
-// --------------- Mensagens de Lobby ---------------
 
 message JoinRequest {
   string player_name = 1;
@@ -76,8 +67,6 @@ message ActionResponse {
   string data = 3;
 }
 
-// --------------- Gameplay ---------------
-
 message HintRequest {
   string player_id = 1;
   string game_id = 2;
@@ -98,8 +87,6 @@ message ValidateRequest {
   bool is_correct = 4;
 }
 
-// --------------- Troca Privada ---------------
-
 message ExchangeRequest {
   string from_id = 1;
   string to_id = 2;
@@ -115,23 +102,17 @@ message ExchangeResponseRequest {
   string hint = 5;
 }
 
-// --------------- Espionagem ---------------
-
 message SpyRequest {
   string spy_id = 1;
   string game_id = 2;
   string exchange_id = 3;
 }
 
-// --------------- Votação ---------------
-
 message VoteRequest {
   string player_id = 1;
   string game_id = 2;
   bool continue_game = 3;
 }
-
-// --------------- Chat ---------------
 
 message ChatMessageRequest {
   string player_id = 1;
@@ -155,8 +136,6 @@ message ChatMessage {
   string message = 3;
   int64 timestamp = 4;
 }
-
-// --------------- Stream de Eventos ---------------
 
 message StreamRequest {
   string player_id = 1;

@@ -6,12 +6,6 @@ from domain.models import GameState
 
 
 class BaseService:
-    """
-    Dependências compartilhadas por todos os services:
-      - _games   : dicionário game_id → GameState
-      - _locks   : dicionário game_id → asyncio.Lock (um lock por partida)
-      - _bus     : EventBus para broadcast de eventos
-    """
 
     def __init__(
         self,

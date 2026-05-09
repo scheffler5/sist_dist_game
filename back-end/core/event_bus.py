@@ -4,14 +4,8 @@ from typing import Dict, Optional
 
 
 class EventBus:
-    """
-    Pub/sub de eventos por partida.
-    Cada jogador possui uma asyncio.Queue dedicada.
-    O broadcast coloca eventos em todas as filas (ou só na do target).
-    """
 
     def __init__(self):
-        # game_id → { player_id → Queue }
         self._queues: Dict[str, Dict[str, asyncio.Queue]] = {}
 
     async def subscribe(self, game_id: str, player_id: str) -> asyncio.Queue:

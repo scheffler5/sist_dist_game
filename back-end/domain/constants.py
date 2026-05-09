@@ -8,19 +8,16 @@ class GameStatus(str, Enum):
     FINISHED = "finished"
 
 
-# Pontuação — adivinhador
 FIRST_GUESS_POINTS = 15
 OTHER_GUESS_POINTS = 10
-SOLO_BONUS_POINTS = 5       # bônus para quem foi o único a adivinhar algum objeto
+SOLO_BONUS_POINTS = 5
 
-# Pontuação — dono do objeto
-OWNER_SOLO_POINTS = 20      # só 1 jogador adivinhou
-OWNER_MULTI_POINTS = 10     # mais de 1 adivinhou, mas não todos
-OWNER_ALL_PENALTY = -5      # todos adivinharam
+OWNER_SOLO_POINTS = 20
+OWNER_MULTI_POINTS = 10
+OWNER_ALL_PENALTY = -5
 
-# Espionagem
 SPY_CAUGHT_PENALTY = -5
-SPY_CATCH_CHANCE = 0.4      # 40% de chance de ser descoberto
+SPY_CATCH_CHANCE = 0.4
 
 OBJECTS = [
     {"name": "bicicleta",   "emoji": "🚲"},

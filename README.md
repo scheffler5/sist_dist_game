@@ -4,6 +4,8 @@ Jogo multiplayer de adivinhação em tempo real. Cada jogador recebe um objeto s
 
 A aplicação foi construída como um exercício de sistemas distribuídos, integrando três protocolos de comunicação (gRPC, HTTP REST, WebSocket) e três serviços containerizados (gateway, gRPC server, MongoDB).
 
+> Documentação técnica detalhada por etapas: [`docs/`](docs/README.md) — arquitetura, RPC, gateway, funcionamento do jogo, persistência, frontend, deploy.
+
 ---
 
 ## Visão geral

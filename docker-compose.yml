@@ -1,6 +1,5 @@
 services:
 
-  # ── MongoDB ────────────────────────────────────────────────
   mongodb:
     image: mongo:7
     container_name: guessgame-mongodb
@@ -17,7 +16,6 @@ services:
     networks:
       - game-network
 
-  # ── Backend (gRPC Server + FastAPI Gateway) ────────────────
   backend:
     build:
       context: ./back-end
@@ -39,7 +37,6 @@ services:
     networks:
       - game-network
 
-  # ── Frontend (Nginx + HTML/CSS/JS) ─────────────────────────
   frontend:
     build:
       context: ./front-end

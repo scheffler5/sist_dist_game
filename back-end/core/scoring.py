@@ -12,7 +12,6 @@ from domain.models import GameState
 
 
 def assign_objects(game: GameState) -> None:
-    """Sorteia objetos únicos para cada jogador e reseta flags por rodada."""
     available = [o for o in OBJECTS if o["name"] not in game.used_objects]
     if len(available) < len(game.players):
         game.used_objects = []
@@ -31,15 +30,6 @@ def assign_objects(game: GameState) -> None:
 
 
 def calculate_owner_scores(game: GameState) -> None:
-    """
-    Aplica pontuação dos donos ao fim dos turnos.
-    Regras:
-      - Ninguém adivinhou  → 0 pts
-      - Só 1 adivinhou     → OWNER_SOLO_POINTS
-      - Vários adivinharam → OWNER_MULTI_POINTS
-      - Todos adivinharam  → OWNER_ALL_PENALTY
-    Bônus adicional: quem foi o ÚNICO a adivinhar qualquer objeto ganha SOLO_BONUS_POINTS.
-    """
     n_others = len(game.players) - 1
     if n_others <= 0:
         return
@@ -55,7 +45,6 @@ def calculate_owner_scores(game: GameState) -> None:
         else:
             player.score += OWNER_MULTI_POINTS
 
-    # Bônus de único acertador
     for pid, guesser in game.players.items():
         for target in game.players.values():
             if target.id == pid:

@@ -13,8 +13,6 @@ class LobbyService(BaseService):
     async def create_or_join_game(
         self, game_id: str, player_name: str
     ) -> Tuple[Optional[str], Optional[str], str]:
-        """Cria uma partida nova ou entra numa existente.
-        Retorna (player_id, game_id, message)."""
         async with self._get_lock(game_id):
             creating = game_id not in self._games
             if creating:

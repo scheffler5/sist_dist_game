@@ -1,14 +1,3 @@
-"""
-Gateway HTTP/WebSocket que serve como ponte entre o navegador e o servidor gRPC.
-
-Fluxo:
-  Browser → HTTP REST → Gateway → gRPC → GameServer
-  Browser ← WebSocket ← Gateway ← gRPC streaming ← GameServer
-
-O gateway funciona como cliente gRPC e traduz as chamadas para o protocolo
-que os browsers conseguem usar (HTTP/WebSocket).
-"""
-
 import asyncio
 import json
 import logging
@@ -34,22 +23,17 @@ GRPC_ADDRESS = f"{GRPC_HOST}:{GRPC_PORT}"
 HTTP_PORT = int(os.environ.get("HTTP_PORT", "8000"))
 
 
-# --------------- Helpers ---------------
-
 def get_stub():
     channel = grpc.aio.insecure_channel(GRPC_ADDRESS)
     return game_pb2_grpc.GameServiceStub(channel), channel
 
 
 async def call_grpc(method_name: str, request_obj):
-    """Executa uma chamada gRPC unária e retorna a resposta."""
     async with grpc.aio.insecure_channel(GRPC_ADDRESS) as channel:
         stub = game_pb2_grpc.GameServiceStub(channel)
         method = getattr(stub, method_name)
         return await method(request_obj)
 
-
-# --------------- Modelos de Request ---------------
 
 class JoinBody(BaseModel):
     player_name: str
@@ -111,8 +95,6 @@ class ChatBody(BaseModel):
     message: str
 
 
-# --------------- App ---------------
-
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     logger.info(f"Gateway iniciado, conectando ao gRPC em {GRPC_ADDRESS}")
@@ -129,8 +111,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
-# --------------- Endpoints HTTP ---------------
 
 @app.get("/health")
 async def health():
@@ -287,14 +267,8 @@ async def get_chat(game_id: str, limit: int = 50):
     ]
 
 
-# --------------- WebSocket (relay do stream gRPC) ---------------
-
 @app.websocket("/ws/{game_id}/{player_id}")
 async def websocket_relay(websocket: WebSocket, game_id: str, player_id: str):
-    """
-    Abre um stream gRPC de eventos e repassa cada evento ao browser via WebSocket.
-    Isso implementa o padrão event-driven em vez de polling.
-    """
     await websocket.accept()
     logger.info(f"WebSocket conectado: player={player_id}, game={game_id}")
 

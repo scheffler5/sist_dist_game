@@ -9,10 +9,8 @@ python -m grpc_tools.protoc \
   --grpc_python_out=/app/generated \
   /app/protos/game.proto
 
-# Corrige imports relativos gerados pelo protoc
 sed -i 's/^import game_pb2/from generated import game_pb2/' /app/generated/game_pb2_grpc.py
 
-# Cria __init__.py para o pacote generated
 touch /app/generated/__init__.py
 
 echo "=== Iniciando servidor gRPC (porta 50051) ==="

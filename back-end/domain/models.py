@@ -28,7 +28,7 @@ class GuessAttempt:
     guesser_name: str
     target_player_id: str
     guess: str
-    status: str = "pending"     # pending | correct | incorrect
+    status: str = "pending"
     timestamp: float = field(default_factory=time.time)
     first_correct: bool = False
 
@@ -42,7 +42,7 @@ class PrivateExchange:
     to_name: str
     from_hint: str
     to_hint: str = ""
-    status: str = "pending"     # pending | accepted | rejected
+    status: str = "pending"
     round: int = 0
     spies_caught: List[str] = field(default_factory=list)
     spies_succeeded: List[str] = field(default_factory=list)
@@ -63,7 +63,6 @@ class GameState:
     used_objects: List[str] = field(default_factory=list)
 
     def to_dict(self, viewer_id: str = None) -> dict:
-        """Serializa o estado ocultando segredos conforme o espectador."""
         players_data = {}
         for pid, p in self.players.items():
             pd = {

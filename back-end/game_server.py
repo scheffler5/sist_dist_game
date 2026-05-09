@@ -1,8 +1,3 @@
-"""
-Servidor gRPC do jogo de adivinhação.
-Implementa todos os RPCs definidos em game.proto usando grpc.aio (async).
-"""
-
 import asyncio
 import json
 import logging
@@ -12,7 +7,6 @@ import sys
 
 import grpc
 
-# Importa os módulos gerados pelo protoc
 sys.path.insert(0, os.path.dirname(__file__))
 from generated import game_pb2, game_pb2_grpc
 from game_manager import game_manager
@@ -25,8 +19,6 @@ GRPC_PORT = int(os.environ.get("GRPC_PORT", "50051"))
 
 
 class GameServiceServicer(game_pb2_grpc.GameServiceServicer):
-
-    # ==================== Lobby ====================
 
     async def JoinGame(self, request, context):
         player_id, game_id, message = await game_manager.create_or_join_game(
@@ -72,8 +64,6 @@ class GameServiceServicer(game_pb2_grpc.GameServiceServicer):
         )
         return game_pb2.ActionResponse(success=ok, message=msg)
 
-    # ==================== Gameplay ====================
-
     async def SendPublicHint(self, request, context):
         ok, msg = await game_manager.send_public_hint(
             game_id=request.game_id,
@@ -108,8 +98,6 @@ class GameServiceServicer(game_pb2_grpc.GameServiceServicer):
         )
         return game_pb2.ActionResponse(success=ok, message=msg)
 
-    # ==================== Troca Privada ====================
-
     async def RequestPrivateExchange(self, request, context):
         ok, msg, exchange_id = await game_manager.request_private_exchange(
             game_id=request.game_id,
@@ -130,8 +118,6 @@ class GameServiceServicer(game_pb2_grpc.GameServiceServicer):
         )
         return game_pb2.ActionResponse(success=ok, message=msg)
 
-    # ==================== Espionagem ====================
-
     async def SpyOnExchange(self, request, context):
         ok, msg, discovered, hint1, hint2 = await game_manager.spy_on_exchange(
             game_id=request.game_id,
@@ -147,8 +133,6 @@ class GameServiceServicer(game_pb2_grpc.GameServiceServicer):
             })
         return game_pb2.ActionResponse(success=ok, message=msg, data=data)
 
-    # ==================== Votação ====================
-
     async def VoteContinue(self, request, context):
         ok, msg = await game_manager.vote_continue(
             game_id=request.game_id,
@@ -156,8 +140,6 @@ class GameServiceServicer(game_pb2_grpc.GameServiceServicer):
             continue_game=request.continue_game,
         )
         return game_pb2.ActionResponse(success=ok, message=msg)
-
-    # ==================== Chat ====================
 
     async def SendChatMessage(self, request, context):
         try:
@@ -198,10 +180,7 @@ class GameServiceServicer(game_pb2_grpc.GameServiceServicer):
             logger.error(f"Erro ao buscar histórico: {e}")
             return game_pb2.ChatHistoryResponse()
 
-    # ==================== Stream de Eventos ====================
-
     async def StreamEvents(self, request, context):
-        """Server-side streaming: envia eventos em tempo real para o cliente."""
         game_id = request.game_id
         player_id = request.player_id
 
@@ -210,7 +189,6 @@ class GameServiceServicer(game_pb2_grpc.GameServiceServicer):
         queue = await game_manager.subscribe(game_id, player_id)
 
         try:
-            # Envia estado inicial
             game = game_manager.get_game(game_id)
             if game:
                 state = game.to_dict(viewer_id=player_id)
@@ -225,7 +203,6 @@ class GameServiceServicer(game_pb2_grpc.GameServiceServicer):
                     timestamp=int(time.time() * 1000),
                 )
 
-            # Stream contínuo
             while True:
                 if context.cancelled():
                     break
@@ -238,7 +215,6 @@ class GameServiceServicer(game_pb2_grpc.GameServiceServicer):
                         target_player_id=event.get("target_player_id", ""),
                     )
                 except asyncio.TimeoutError:
-                    # Heartbeat para manter a conexão viva
                     yield game_pb2.GameEvent(
                         event_type="heartbeat",
                         data="{}",

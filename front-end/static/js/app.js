@@ -1,14 +1,6 @@
-/**
- * app.js — Lógica completa do cliente do jogo AdivinhAí
- * Comunicação via WebSocket (eventos em tempo real) + HTTP REST (ações do jogo)
- */
-
-// ==================== Configuração ====================
-// Usa paths relativos — nginx faz proxy para o backend
 const API_BASE = "";
 const WS_BASE  = `ws://${location.host}`;
 
-// ==================== Estado do Cliente ====================
 let state = {
   playerId: null,
   playerName: null,
@@ -18,15 +10,14 @@ let state = {
   myObjectEmoji: null,
   hintSentThisTurn: false,
   exchangeUsed: false,
-  pendingValidations: [],   // { guess_id, guesser_name, guess }
-  pendingExchangeRequests: [], // { exchange_id, from_id, from_name }
-  spyTarget: null,          // { exchange_id, from_name, to_name }
+  pendingValidations: [],
+  pendingExchangeRequests: [],
+  spyTarget: null,
   lastGameState: null,
   ws: null,
   voted: false,
 };
 
-// ==================== Navegação de Telas ====================
 function showScreen(id) {
   ["login","lobby","game","voting","result"].forEach(s => {
     const el = document.getElementById(`screen-${s}`);
@@ -44,7 +35,6 @@ function showScreen(id) {
   }
 }
 
-// ==================== Toast Notifications ====================
 function toast(message, type = "info", duration = 4000) {
   const container = document.getElementById("toasts");
   const styles = {
@@ -67,7 +57,6 @@ function toast(message, type = "info", duration = 4000) {
   }, duration);
 }
 
-// ==================== Feed de Eventos (in-game) ====================
 function addEventFeed(text) {
   const feed = document.getElementById("event-feed");
   if (!feed) return;
@@ -81,7 +70,6 @@ function addEventFeed(text) {
   }, 6000);
 }
 
-// ==================== API Helpers ====================
 async function api(path, method = "GET", body = null) {
   const opts = {
     method,
@@ -93,7 +81,6 @@ async function api(path, method = "GET", body = null) {
   return res.json();
 }
 
-// ==================== WebSocket ====================
 function connectWS() {
   if (state.ws) state.ws.close();
 
@@ -123,9 +110,7 @@ function connectWS() {
   state.ws.onerror = (e) => console.error("WebSocket erro:", e);
 }
 
-// ==================== Handlers de Eventos ====================
 function handleEvent(type, data) {
-  // Ignora eventos privados destinados a outro jogador
   if (data && data.target_player_id && data.target_player_id !== state.playerId) return;
 
   switch (type) {
@@ -181,7 +166,6 @@ function handleEvent(type, data) {
       break;
 
     case "validate_request":
-      // Só chega para o dono do objeto
       state.pendingValidations.push({
         guess_id: data.guess_id,
         guesser_name: data.guesser_name,
@@ -211,7 +195,6 @@ function handleEvent(type, data) {
       break;
 
     case "exchange_request":
-      // Só chega para o destinatário
       state.pendingExchangeRequests.push({
         exchange_id: data.exchange_id,
         from_id: data.from_id,
@@ -310,7 +293,6 @@ function handleEvent(type, data) {
   }
 }
 
-// ==================== Ações do Lobby ====================
 async function joinGame() {
   const name = document.getElementById("input-name").value.trim();
   const gameId = document.getElementById("input-gameid").value.trim();
@@ -327,10 +309,8 @@ async function joinGame() {
 
     document.getElementById("lobby-code").textContent = res.game_id;
 
-    // Conecta WebSocket antes de ir para o lobby
     connectWS();
 
-    // Carrega estado atual
     await refreshState();
     showScreen("lobby");
     toast(res.message, "success");
@@ -353,7 +333,6 @@ async function startGame() {
   }
 }
 
-// ==================== Ações do Jogo ====================
 async function sendHint() {
   const hint = document.getElementById("hint-input").value.trim();
   if (!hint) { toast("Digite uma dica.", "error"); return; }
@@ -431,7 +410,6 @@ async function advanceTurn() {
   }
 }
 
-// ==================== Trocas Privadas ====================
 async function requestExchange() {
   const toId = document.getElementById("exchange-target").value;
   const hint = document.getElementById("exchange-hint").value.trim();
@@ -489,7 +467,6 @@ async function respondToExchange(exchangeId, accept) {
   }
 }
 
-// ==================== Espionagem ====================
 function openSpy(exchangeId, fromName, toName) {
   state.spyTarget = { exchange_id: exchangeId, from_name: fromName, to_name: toName };
   document.getElementById("spy-target-names").textContent = `${fromName} e ${toName}`;
@@ -544,7 +521,6 @@ function showSpyResult(hint1, hint2, name1, name2) {
   setTimeout(() => el.remove(), 12000);
 }
 
-// ==================== Votação ====================
 async function vote(continueGame) {
   if (state.voted) { toast("Você já votou.", "warning"); return; }
   state.voted = true;
@@ -569,7 +545,6 @@ async function vote(continueGame) {
   }
 }
 
-// ==================== Chat ====================
 async function sendChat() {
   const input = document.getElementById("chat-input");
   const msg = input.value.trim();
@@ -619,7 +594,6 @@ async function loadChatHistory() {
   }
 }
 
-// ==================== Render State ====================
 async function refreshState() {
   if (!state.gameId || !state.playerId) return;
   try {
@@ -633,7 +607,6 @@ async function refreshState() {
 function applyGameState(gameState) {
   state.lastGameState = gameState;
 
-  // Atualiza HUD
   if (document.getElementById("hud-gameid"))
     document.getElementById("hud-gameid").textContent = gameState.game_id;
   if (document.getElementById("hud-turn"))
@@ -649,7 +622,6 @@ function applyGameState(gameState) {
     state.hintSentThisTurn = me.hint_sent_this_turn;
     state.exchangeUsed = me.private_exchange_used;
 
-    // Status da dica
     const hintStatus = document.getElementById("hint-status");
     if (hintStatus) {
       if (me.hint_sent_this_turn) {
@@ -660,7 +632,6 @@ function applyGameState(gameState) {
       }
     }
 
-    // Status da troca
     const exchangeMsg = document.getElementById("exchange-used-msg");
     if (exchangeMsg) {
       if (me.private_exchange_used) {
@@ -671,7 +642,6 @@ function applyGameState(gameState) {
     }
   }
 
-  // Atualiza minhas dicas
   if (me) {
     const myHintsList = document.getElementById("my-hints-list");
     if (myHintsList) {
@@ -682,7 +652,6 @@ function applyGameState(gameState) {
     }
   }
 
-  // Controles do host
   const hostCtrl = document.getElementById("host-turn-controls");
   if (hostCtrl) {
     if (state.isHost && gameState.status === "playing") {
@@ -692,10 +661,8 @@ function applyGameState(gameState) {
     }
   }
 
-  // Atualiza selects de alvo
   updatePlayerSelects(gameState);
 
-  // Renderiza jogadores
   renderPlayers(gameState);
   renderScoreboard(gameState);
   renderExchanges(gameState);
@@ -910,7 +877,6 @@ function renderLobbyPlayersFromState(gameState) {
     </div>
   `).join("") || '<p class="text-zinc-600 text-xs">Nenhum jogador ainda.</p>';
 
-  // Controles do host
   const hostCtrl = document.getElementById("host-controls");
   if (hostCtrl) {
     if (state.isHost) hostCtrl.classList.remove("hidden");
@@ -946,7 +912,6 @@ function renderVotingScores(scores) {
     }).join("")}
   `;
 
-  // Reset voto
   state.voted = false;
   document.getElementById("vote-buttons").classList.remove("hidden");
   document.getElementById("vote-status").classList.add("hidden");
@@ -975,7 +940,6 @@ function renderFinalScores(scores) {
   }).join("");
 }
 
-// ==================== Utilidades ====================
 function escapeHtml(str) {
   if (!str) return "";
   return String(str)
@@ -998,11 +962,9 @@ function resetGame() {
   showScreen("login");
 }
 
-// ==================== Inicialização ====================
 document.addEventListener("DOMContentLoaded", () => {
   showScreen("login");
 
-  // Enter no login
   document.getElementById("input-name").addEventListener("keydown", e => {
     if (e.key === "Enter") joinGame();
   });
